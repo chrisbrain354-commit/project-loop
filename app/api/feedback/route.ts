@@ -2,6 +2,8 @@ import { withAuth, ValidationError } from "@/app/lib/auth-helpers";
 import { prisma } from "@/app/lib/db";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const createFeedbackSchema = z.object({
   content: z.string().min(1, "Content is required"),
   channel: z.string().min(1, "Channel is required"),

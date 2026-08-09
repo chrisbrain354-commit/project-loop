@@ -2,6 +2,8 @@ import { withAuth, ValidationError, NotFoundError } from "@/app/lib/auth-helpers
 import { prisma } from "@/app/lib/db";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const updateRoleSchema = z.object({
   role: z.enum(["ADMIN", "ANALYST", "VIEWER"]),
 });
