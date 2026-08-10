@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function FeedbackForm() {
   const router = useRouter();
+
   const [content, setContent] = useState("");
   const [channel, setChannel] = useState("support_ticket");
   const [error, setError] = useState<string | null>(null);
@@ -12,65 +13,129 @@ export default function FeedbackForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
     setError(null);
     setSubmitting(true);
 
-    const res = await fetch("/api/feedback", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content, channel }),
-    });
+    try {
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content,
+          channel,
+        }),
+      });
 
-    setSubmitting(false);
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error ?? "Something went wrong");
+        return;
+      }
 
-    if (!res.ok) {
-      const data = await res.json();
-      setError(data.error ?? "Something went wrong");
-      return;
+      setContent("");
+      router.refresh();
+    } catch {
+      setError("Unable to add feedback. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-
-    setContent("");
-    router.refresh(); // re-fetches the server component below, showing the new item
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-6 p-4 border rounded-md">
-      <div className="mb-3">
-        <label className="block text-sm font-medium mb-1">Content</label>
+    <form onSubmit={handleSubmit} className="space-y-4">
+
+      {/* ================= CONTENT ================= */}
+      <div>
+        <label
+          htmlFor="content"
+          className="mb-1.5 block text-xs font-semibold text-slate-700"
+        >
+          Customer feedback
+        </label>
+
         <textarea
+          id="content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           required
-          rows={3}
-          className="w-full border rounded-md p-2 text-sm"
+          rows={4}
           placeholder="What did the customer say?"
+          className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
         />
       </div>
 
-      <div className="mb-3">
-        <label className="block text-sm font-medium mb-1">Channel</label>
+      {/* ================= CHANNEL ================= */}
+      <div>
+        <label
+          htmlFor="channel"
+          className="mb-1.5 block text-xs font-semibold text-slate-700"
+        >
+          Feedback channel
+        </label>
+
         <select
+          id="channel"
           value={channel}
           onChange={(e) => setChannel(e.target.value)}
-          className="w-full border rounded-md p-2 text-sm"
+          className="h-[42px] w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
         >
-          <option value="support_ticket">Support ticket</option>
-          <option value="app_store_review">App store review</option>
-          <option value="nps_survey">NPS survey</option>
-          <option value="sales_call_note">Sales call note</option>
-          <option value="community_post">Community post</option>
+          <option value="support_ticket">
+            Support ticket
+          </option>
+
+          <option value="app_store_review">
+            App store review
+          </option>
+
+          <option value="nps_survey">
+            NPS survey
+          </option>
+
+          <option value="sales_call_note">
+            Sales call note
+          </option>
+
+          <option value="community_post">
+            Community post
+          </option>
         </select>
       </div>
 
-      {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+      {/* ================= ERROR ================= */}
+      {error && (
+        <div
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700"
+        >
+          {error}
+        </div>
+      )}
 
+      {/* ================= BUTTON ================= */}
       <button
         type="submit"
         disabled={submitting}
-        className="bg-black text-white text-sm px-4 py-2 rounded-md disabled:opacity-50"
+        className="group flex h-[42px] w-full items-center justify-center gap-2 rounded-xl bg-[#111827] text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-indigo-600 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {submitting ? "Adding..." : "Add feedback"}
+        {submitting ? (
+          <>
+            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+            Adding feedback...
+          </>
+        ) : (
+          <>
+            Add feedback
+
+            <span className="transition-transform duration-200 group-hover:translate-x-1">
+              →
+            </span>
+          </>
+        )}
       </button>
+
     </form>
   );
 }
