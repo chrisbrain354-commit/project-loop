@@ -1,7 +1,7 @@
-```tsx
 "use client";
 
 import { useState } from "react";
+import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
@@ -14,7 +14,7 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -22,20 +22,19 @@ export default function SignupPage() {
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          workspaceName,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, workspaceName }),
       });
 
       if (!res.ok) {
-           const data = await res.json();
-        setError(data.error || "Something went wrong");
+        let message = "Something went wrong";
+        try {
+          const data: any = await res.json();
+          message = data?.error || data?.message || message;
+        } catch {
+          // non-JSON or empty response — keep generic message
+        }
+        setError(message);
         return;
       }
 
@@ -333,4 +332,3 @@ export default function SignupPage() {
     </main>
   );
 }
-```
