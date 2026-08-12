@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../lib/auth";
 import { prisma } from "../lib/db";
 import FeedbackForm from "./FeedbackForm";
+import BulkUploadForm from "./BulkUploadForm";
 
 export default async function FeedbackPage() {
   const session = await getServerSession(authOptions);
@@ -40,23 +41,29 @@ export default async function FeedbackPage() {
 
         </div>
 
-        {/* ================= FEEDBACK FORM ================= */}
+        {/* ================= FEEDBACK FORM + BULK UPLOAD ================= */}
         {role !== "VIEWER" && (
-          <div className="mb-6 rounded-2xl border border-slate-200 bg-white px-6 py-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)] sm:px-7">
+          <>
+            <div className="mb-6 rounded-2xl border border-slate-200 bg-white px-6 py-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)] sm:px-7">
 
-            <div className="mb-5">
-              <h2 className="text-base font-bold text-slate-900">
-                Add customer feedback
-              </h2>
+              <div className="mb-5">
+                <h2 className="text-base font-bold text-slate-900">
+                  Add customer feedback
+                </h2>
 
-              <p className="mt-1 text-xs text-slate-500">
-                Capture what your customers are saying.
-              </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Capture what your customers are saying.
+                </p>
+              </div>
+
+              <FeedbackForm />
+
             </div>
 
-            <FeedbackForm />
-
-          </div>
+            <div className="mb-6">
+              <BulkUploadForm />
+            </div>
+          </>
         )}
 
         {/* ================= VIEWER MESSAGE ================= */}
