@@ -12,15 +12,42 @@ const createFeedbackSchema = z.object({
 
 // GET /api/feedback — list all feedback in the caller's workspace
 // (basic list only for now — search/filter/pagination come in Week 2)
-export async function GET() {
+export async function GET(req: Request) {
   return withAuth(["ADMIN", "ANALYST", "VIEWER"], async ({ workspaceId }) => {
-    return prisma.feedback.findMany({
-      where: { workspaceId },
-      orderBy: { createdAt: "desc" },
-    });
+    const { searchParams } = new URL(req.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const search = searchParams.get("search")?.trim() || "";
+    const pageSize = 20;
+
+    const where = {
+      workspaceId,
+      ...(search && {
+        content: {
+          contains: search,
+          mode: "insensitive" as const,
+        },
+      }),
+    };
+
+    const [items, total] = await Promise.all([
+      prisma.feedback.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.feedback.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
   });
 }
-
 // POST /api/feedback — create a single feedback item
 export async function POST(req: Request) {
   return withAuth(["ADMIN", "ANALYST"], async ({ workspaceId }) => {
