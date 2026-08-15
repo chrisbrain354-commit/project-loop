@@ -10,21 +10,32 @@ const createFeedbackSchema = z.object({
   customerLabel: z.string().optional(),
 });
 
-// GET /api/feedback — list all feedback in the caller's workspace
-// (basic list only for now — search/filter/pagination come in Week 2)
+// GET /api/feedback — list feedback in the caller's workspace with
+// pagination, search, and filters (channel, sentiment, status, date range)
 export async function GET(req: Request) {
   return withAuth(["ADMIN", "ANALYST", "VIEWER"], async ({ workspaceId }) => {
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const search = searchParams.get("search")?.trim() || "";
+    const channel = searchParams.get("channel") || "";
+    const sentiment = searchParams.get("sentiment") || "";
+    const status = searchParams.get("status") || "";
+    const dateFrom = searchParams.get("dateFrom") || "";
+    const dateTo = searchParams.get("dateTo") || "";
     const pageSize = 20;
 
-    const where = {
+    const where: any = {
       workspaceId,
       ...(search && {
-        content: {
-          contains: search,
-          mode: "insensitive" as const,
+        content: { contains: search, mode: "insensitive" as const },
+      }),
+      ...(channel && { channel }),
+      ...(sentiment && { sentiment }),
+      ...(status && { status }),
+      ...((dateFrom || dateTo) && {
+        createdAt: {
+          ...(dateFrom && { gte: new Date(dateFrom) }),
+          ...(dateTo && { lte: new Date(dateTo) }),
         },
       }),
     };
@@ -48,6 +59,7 @@ export async function GET(req: Request) {
     };
   });
 }
+
 // POST /api/feedback — create a single feedback item
 export async function POST(req: Request) {
   return withAuth(["ADMIN", "ANALYST"], async ({ workspaceId }) => {
