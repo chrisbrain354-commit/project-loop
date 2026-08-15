@@ -3,6 +3,7 @@ import { authOptions } from "../lib/auth";
 import { prisma } from "../lib/db";
 import FeedbackForm from "./FeedbackForm";
 import BulkUploadForm from "./BulkUploadForm";
+import SimulateChannelButton from "./SimulateChannelButton";
 
 export default async function FeedbackPage() {
   const session = await getServerSession(authOptions);
@@ -41,7 +42,7 @@ export default async function FeedbackPage() {
 
         </div>
 
-        {/* ================= FEEDBACK FORM + BULK UPLOAD ================= */}
+        {/* ================= FEEDBACK FORM + BULK UPLOAD + SIMULATE ================= */}
         {role !== "VIEWER" && (
           <>
             <div className="mb-6 rounded-2xl border border-slate-200 bg-white px-6 py-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)] sm:px-7">
@@ -62,6 +63,10 @@ export default async function FeedbackPage() {
 
             <div className="mb-6">
               <BulkUploadForm />
+            </div>
+
+            <div className="mb-6">
+              <SimulateChannelButton />
             </div>
           </>
         )}
