@@ -7,7 +7,7 @@ export default function FeedbackForm() {
   const router = useRouter();
 
   const [content, setContent] = useState("");
-  const [channel, setChannel] = useState("support_ticket");
+  const [channel, setChannel] = useState("Support ticket");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -82,23 +82,23 @@ export default function FeedbackForm() {
           onChange={(e) => setChannel(e.target.value)}
           className="h-[42px] w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
         >
-          <option value="support_ticket">
+          <option value="Support ticket">
             Support ticket
           </option>
 
-          <option value="app_store_review">
+          <option value="App store review">
             App store review
           </option>
 
-          <option value="nps_survey">
+          <option value="NPS survey">
             NPS survey
           </option>
 
-          <option value="sales_call_note">
+          <option value="Sales call note">
             Sales call note
           </option>
 
-          <option value="community_post">
+          <option value="Community post">
             Community post
           </option>
         </select>

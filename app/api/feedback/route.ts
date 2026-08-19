@@ -1,6 +1,8 @@
 import { withAuth, ValidationError } from "@/app/lib/auth-helpers";
 import { prisma } from "@/app/lib/db";
 import { z } from "zod";
+import { classifyFeedback } from "@/app/lib/ai";
+import { linkFeedbackToThemes } from "@/app/lib/themes";
 
 export const dynamic = "force-dynamic";
 
@@ -70,13 +72,30 @@ export async function POST(req: Request) {
       throw new ValidationError(parsed.error.issues[0].message);
     }
 
-    return prisma.feedback.create({
+    const existingThemes = await prisma.theme.findMany({
+      where: { workspaceId },
+      select: { name: true },
+    });
+
+    const classification = await classifyFeedback(
+      parsed.data.content,
+      existingThemes.map((t) => t.name)
+    );
+
+    const created = await prisma.feedback.create({
       data: {
         ...parsed.data,
         workspaceId,
-        // sentiment, sentimentScore left null — AI classification comes in Week 3
-        // status defaults to NEW automatically
+        sentiment: classification?.sentiment ?? null,
+        sentimentScore: classification?.sentimentScore ?? null,
       },
     });
+
+    // Link to themes if classification succeeded and themes were identified
+    if (classification?.themes?.length) {
+      await linkFeedbackToThemes(created.id, classification.themes, workspaceId);
+    }
+
+    return created;
   });
 }
