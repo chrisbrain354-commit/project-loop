@@ -22,7 +22,7 @@ function stripMarkdownFences(text: string): string {
 }
 
 async function callGemini(content: string, existingThemes: string[]): Promise<string> {
-  const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
 
   const prompt = `You are classifying a piece of customer feedback for a product feedback platform.
 
@@ -67,4 +67,19 @@ export async function classifyFeedback(
   }
 
   return null;
+}
+export async function embedText(text: string): Promise<number[]> {
+  const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
+  const result = await model.embedContent(text);
+  return result.embedding.values;
+}
+
+export function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0, magA = 0, magB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    magA += a[i] * a[i];
+    magB += b[i] * b[i];
+  }
+  return dot / (Math.sqrt(magA) * Math.sqrt(magB));
 }

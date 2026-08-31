@@ -1,8 +1,8 @@
 import { withAuth, ValidationError } from "@/app/lib/auth-helpers";
 import { prisma } from "@/app/lib/db";
 import { z } from "zod";
-import { classifyFeedback } from "@/app/lib/ai";
 import { linkFeedbackToThemes } from "@/app/lib/themes";
+import { classifyFeedback, embedText } from "@/app/lib/ai";
 
 export const dynamic = "force-dynamic";
 
@@ -90,6 +90,15 @@ export async function POST(req: Request) {
         sentimentScore: classification?.sentimentScore ?? null,
       },
     });
+
+try {
+  const vector = await embedText(parsed.data.content);
+  await prisma.embedding.create({
+    data: { feedbackId: created.id, vector },
+  });
+} catch (err) {
+  console.error("Embedding failed:", err);
+}
 
     // Link to themes if classification succeeded and themes were identified
     if (classification?.themes?.length) {
